@@ -41,11 +41,11 @@ jobs:
           const prevVersion = manifest.version;
     
           const parsed = semver.parse(prevVersion);
-          let prereleaseIdentifier = parsed.prerelease[0] || 0;
+          let prereleaseIdentifier = parsed.version[0] || 0;
     
           // Increment the patch version and reset prerelease number if it's a new patch version
           let newPatchVersion = parsed.patch;
-          if (parsed.prerelease.length === 0) {
+          if (parsed.version.length === 0) {
             newPatchVersion += 1;
             prereleaseIdentifier = 0;
           } else {
