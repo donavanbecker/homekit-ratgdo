@@ -47,7 +47,7 @@ jobs:
           prereleaseIdentifier = parseInt(prereleaseIdentifier) + 1;
 
           // Construct the new version
-          const newVersion = `${parsed.major}.${parsed.minor}.${parsed.patch}-prerelease.${prereleaseIdentifier}`;
+          const newVersion = semver.inc(parsed, "-${prereleaseIdentifier}");
 
           return newVersion;
 
