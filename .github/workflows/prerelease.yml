@@ -45,7 +45,7 @@ jobs:
     
           // Increment the patch version and reset prerelease number if it's a new patch version
           let newPatchVersion = parsed.patch;
-          if (parsed.version.length === 0) {
+          if (parsed.patch.length === 0) {
             newPatchVersion += 1;
             prereleaseIdentifier = 0;
           } else {
