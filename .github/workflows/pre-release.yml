@@ -129,7 +129,7 @@ jobs:
     - name: Attach manifest.json
       uses: AButler/upload-release-assets@v3.0
       with:
-        files: "/home/runner/work/homekit-donavanbecker/homekit-ratgdo/docs/manifest.json"
+        files: "/home/runner/work/homekit-ratgdo/homekit-ratgdo/docs/manifest.json"
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         release-tag: v${{ steps.version.outputs.result }}
 
