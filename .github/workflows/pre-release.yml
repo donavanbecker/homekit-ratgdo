@@ -47,7 +47,7 @@ jobs:
 
     - name: Bump version locally
       env:
-        VERSION: ${{ steps.version.outputs.result }}
+        VERSION: v${{ steps.version.outputs.result }}
       run: |        
         git config --global user.email "github-automation@ratgdo.com"
         git config --global user.name "Github Action"
@@ -82,7 +82,7 @@ jobs:
         mode: write
         file: docs/manifest.json
         property: version
-        value: ${{ steps.version.outputs.result }}
+        value: v${{ steps.version.outputs.result }}
         value_type: string
         
     - name: Output created (or overwritten) manifest.json
@@ -100,7 +100,7 @@ jobs:
         mode: write
         file: docs/manifest.json
         property: builds.0.parts.0.path
-        value: firmware/homekit-ratgdo-${{ steps.version.outputs.result }}.bin
+        value: firmware/homekit-ratgdo-v${{ steps.version.outputs.result }}.bin
         value_type: string
         
     - name: Output created (or overwritten) manifest.json
@@ -114,7 +114,7 @@ jobs:
     - name: Attach manifest.json
       uses: AButler/upload-release-assets@v3.0
       with:
-        files: "/home/runner/work/homekit-ratgdo/homekit-ratgdo/docs/manifest.json"
+        files: "/home/runner/work/homekit-donavanbecker/homekit-ratgdo/docs/manifest.json"
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         release-tag: v${{ steps.version.outputs.result }}
 
@@ -122,9 +122,9 @@ jobs:
       uses: wow-actions/download-upload@v1
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        url: https://github.com/ratgdo/homekit-ratgdo/releases/download/${{ steps.version.outputs.result }}/manifest.json
+        url: https://github.com/donavanbecker/homekit-ratgdo/releases/download/v${{ steps.version.outputs.result }}/manifest.json
         dir: docs/
-        commit_message: "Upload Latest manifest.json for ${{ steps.version.outputs.result }}"
+        commit_message: "Upload Latest manifest.json for v${{ steps.version.outputs.result }}"
 
 
     - name: Cache PlatformIO
@@ -155,9 +155,9 @@ jobs:
 
     - name: Rename Firmware Files
       run: |
-        mv .pio/build/ratgdo_esp8266_hV25/firmware.bin .pio/build/ratgdo_esp8266_hV25/homekit-ratgdo-${{ steps.version.outputs.result }}.bin
-        mv .pio/build/ratgdo_esp8266_hV25/firmware.elf .pio/build/ratgdo_esp8266_hV25/homekit-ratgdo-${{ steps.version.outputs.result }}.elf
-        mv .pio/build/ratgdo_esp8266_hV25/firmware.md5 .pio/build/ratgdo_esp8266_hV25/homekit-ratgdo-${{ steps.version.outputs.result }}.md5
+        mv .pio/build/ratgdo_esp8266_hV25/firmware.bin .pio/build/ratgdo_esp8266_hV25/homekit-ratgdo-v${{ steps.version.outputs.result }}.bin
+        mv .pio/build/ratgdo_esp8266_hV25/firmware.elf .pio/build/ratgdo_esp8266_hV25/homekit-ratgdo-v${{ steps.version.outputs.result }}.elf
+        mv .pio/build/ratgdo_esp8266_hV25/firmware.md5 .pio/build/ratgdo_esp8266_hV25/homekit-ratgdo-v${{ steps.version.outputs.result }}.md5
 
     - name: Attach Bundle - Firmware.bin
       uses: AButler/upload-release-assets@v3.0
@@ -170,21 +170,21 @@ jobs:
       uses: wow-actions/download-upload@v1
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        url: https://github.com/ratgdo/homekit-ratgdo/releases/download/${{ steps.version.outputs.result }}/homekit-ratgdo-${{ steps.version.outputs.result }}.bin
+        url: https://github.com/donavanbecker/homekit-ratgdo/releases/download/v${{ steps.version.outputs.result }}/homekit-ratgdo-v${{ steps.version.outputs.result }}.bin
         dir: docs/firmware/
-        commit_message: "Upload Latest Firmware: homekit-ratgdo-${{ steps.version.outputs.result }}.bin"
+        commit_message: "Upload Latest Firmware: homekit-ratgdo-v${{ steps.version.outputs.result }}.bin"
   
     - name: Upload Firmware.bin
       uses: actions/upload-artifact@v4
       with:
-        name: homekit-ratgdo-${{ steps.version.outputs.result }}.bin
+        name: homekit-ratgdo-v${{ steps.version.outputs.result }}.bin
         path: |
           .pio/build/ratgdo_esp8266_hV25/*.bin
 
     - name: Download Firmware.bin
       uses: actions/download-artifact@v4
       with:
-        name: homekit-ratgdo-${{ steps.version.outputs.result }}.bin
+        name: homekit-ratgdo-v${{ steps.version.outputs.result }}.bin
         path: |
           docs/firmware/
 
@@ -199,21 +199,21 @@ jobs:
       uses: wow-actions/download-upload@v1
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        url: https://github.com/ratgdo/homekit-ratgdo/releases/download/${{ steps.version.outputs.result }}/homekit-ratgdo-${{ steps.version.outputs.result }}.md5
+        url: https://github.com/donavanbecker/homekit-ratgdo/releases/download/v${{ steps.version.outputs.result }}/homekit-ratgdo-v${{ steps.version.outputs.result }}.md5
         dir: docs/firmware/
-        commit_message: "Upload Latest md5: homekit-ratgdo-${{ steps.version.outputs.result }}.md5"
+        commit_message: "Upload Latest md5: homekit-ratgdo-v${{ steps.version.outputs.result }}.md5"
   
     - name: Upload Firmware.bin
       uses: actions/upload-artifact@v4
       with:
-        name: homekit-ratgdo-${{ steps.version.outputs.result }}.md5
+        name: homekit-ratgdo-v${{ steps.version.outputs.result }}.md5
         path: |
           .pio/build/ratgdo_esp8266_hV25/*.md5
 
     - name: Download Firmware.md5
       uses: actions/download-artifact@v4
       with:
-        name: homekit-ratgdo-${{ steps.version.outputs.result }}.md5
+        name: homekit-ratgdo-v${{ steps.version.outputs.result }}.md5
         path: |
           docs/firmware/
 
@@ -228,21 +228,21 @@ jobs:
       uses: wow-actions/download-upload@v1
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        url: https://github.com/ratgdo/homekit-ratgdo/releases/download/${{ steps.version.outputs.result }}/homekit-ratgdo-${{ steps.version.outputs.result }}.elf 
+        url: https://github.com/donavanbecker/homekit-ratgdo/releases/download/v${{ steps.version.outputs.result }}/homekit-ratgdo-v${{ steps.version.outputs.result }}.elf 
         dir: docs/firmware/
-        commit_message: "Upload Latest Firmware: homekit-ratgdo-${{ steps.version.outputs.result }}.elf"
+        commit_message: "Upload Latest Firmware: homekit-ratgdo-v${{ steps.version.outputs.result }}.elf"
   
     - name: Upload Firmware.elf
       uses: actions/upload-artifact@v4
       with:
-        name: homekit-ratgdo-${{ steps.version.outputs.result }}.elf
+        name: homekit-ratgdo-v${{ steps.version.outputs.result }}.elf
         path: |
           .pio/build/ratgdo_esp8266_hV25/*.elf
 
     - name: Download Firmware.elf
       uses: actions/download-artifact@v4
       with:
-        name: homekit-ratgdo-${{ steps.version.outputs.result }}.elf
+        name: homekit-ratgdo-v${{ steps.version.outputs.result }}.elf
         path: |
           docs/firmware/
 
@@ -265,13 +265,13 @@ jobs:
       id: cpr
       uses: peter-evans/create-pull-request@v7
       with:
-        commit-message: "[NIGHTLY DEV RELEASE] ${{ steps.version.outputs.result }}"
+        commit-message: "[NIGHTLY DEV RELEASE] v${{ steps.version.outputs.result }}"
         committer: Ratgdo <github-automation@ratgdo.com>
         author: Ratgdo <github-automation@fischer-ka.de>
         signoff: false
         branch: nightly-release
         delete-branch: true
-        title: "[NIGHTLY DEV RELEASE] ${{ steps.version.outputs.result }}"
+        title: "[NIGHTLY DEV RELEASE] v${{ steps.version.outputs.result }}"
         body: |
           Update version by nightly dev release
         labels: |
