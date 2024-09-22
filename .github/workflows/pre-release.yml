@@ -1,0 +1,280 @@
+# This workflow automatically generates nightly release PRs if there were changes to the code
+name: Pre-Release
+
+on:
+  push:
+    branches:
+      - main
+      - next-release
+  workflow_dispatch:
+
+jobs:
+  pre-release:
+    if: github.repository == 'donavanbecker/homekit-ratgdo'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+        fetch-depth: 0 # Fetch the history, or this action won't work
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '20'
+
+    - name: Install semver
+      run: npm install semver
+
+    - name: Determine the version bump
+      id: version
+      uses: actions/github-script@v7
+      with:
+        result-encoding: string
+        script: |
+          const semver = require("semver");
+          const fs = require("fs");
+
+          const manifest = JSON.parse(fs.readFileSync(`${process.env.GITHUB_WORKSPACE}/docs/manifest.json`, "utf8"));
+          const prevVersion = manifest.version;
+
+          // Increment the version
+          const newVersion = semver.inc(prevVersion, "prerelease");
+
+          return newVersion;
+
+    - name: Bump version locally
+      env:
+        VERSION: ${{ steps.version.outputs.result }}
+      run: |        
+        git config --global user.email "github-automation@ratgdo.com"
+        git config --global user.name "Github Action"
+        
+        node -e "
+        const fs = require('fs');
+        const manifest = JSON.parse(fs.readFileSync('docs/manifest.json', 'utf8'));
+        manifest.version = process.env.VERSION;
+        fs.writeFileSync('docs/manifest.json', JSON.stringify(manifest, null, 2));
+        "
+        git add docs/manifest.json
+        git commit -m "v${VERSION}"
+
+    - name: Create nightly release
+      id: create_release
+      uses: viperproject/create-nightly-release@v1
+      env:
+        # This token is provided by Actions, you do not need to create your own token
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.version.outputs.result }}
+        release_name: v${{ steps.version.outputs.result }}
+        body: |
+          This is a Pre-Release Firmware for testing purposes only.
+        keep_num: 2
+        keep_tags: false
+
+    - name: Update version on manifest.json
+      uses: amochkin/action-json@v1
+      id: write_version
+      with:
+        mode: write
+        file: docs/manifest.json
+        property: version
+        value: ${{ steps.version.outputs.result }}
+        value_type: string
+        
+    - name: Output created (or overwritten) manifest.json
+      run: cat docs/manifest.json
+      shell: bash
+      
+    - name: Output read value of 'version' property
+      run: echo ${{ steps.write_version.outputs.value }}
+      shell: bash
+
+    - name: Update firmware/*.bin version on manifest.json
+      uses: amochkin/action-json@v1
+      id: builds_parts_path
+      with:
+        mode: write
+        file: docs/manifest.json
+        property: builds.0.parts.0.path
+        value: firmware/homekit-ratgdo-${{ steps.version.outputs.result }}.bin
+        value_type: string
+        
+    - name: Output created (or overwritten) manifest.json
+      run: cat docs/manifest.json
+      shell: bash
+      
+    - name: Output read value of 'version' property
+      run: echo ${{ steps.builds_parts_path.outputs.value }}
+      shell: bash
+
+    - name: Attach manifest.json
+      uses: AButler/upload-release-assets@v3.0
+      with:
+        files: "/home/runner/work/homekit-ratgdo/homekit-ratgdo/docs/manifest.json"
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        release-tag: v${{ steps.version.outputs.result }}
+
+    - name: Upload Release manifest.json
+      uses: wow-actions/download-upload@v1
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        url: https://github.com/ratgdo/homekit-ratgdo/releases/download/${{ steps.version.outputs.result }}/manifest.json
+        dir: docs/
+        commit_message: "Upload Latest manifest.json for ${{ steps.version.outputs.result }}"
+
+
+    - name: Cache PlatformIO
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/pip
+          ~/.platformio/.cache
+        key: ${{ runner.os }}-pio
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install PlatformIO Core
+      run: |
+          pip install --upgrade pip
+          pip install --upgrade platformio
+
+    - name: Build PlatformIO Project
+      run: pio run -e ratgdo_esp8266_hV25
+
+    - name : md5sum Firmware.bin
+      run: |
+        cd .pio/build/ratgdo_esp8266_hV25
+        md5sum firmware.bin | awk '{print $1}' > firmware.md5
+
+    - name: Rename Firmware Files
+      run: |
+        mv .pio/build/ratgdo_esp8266_hV25/firmware.bin .pio/build/ratgdo_esp8266_hV25/homekit-ratgdo-${{ steps.version.outputs.result }}.bin
+        mv .pio/build/ratgdo_esp8266_hV25/firmware.elf .pio/build/ratgdo_esp8266_hV25/homekit-ratgdo-${{ steps.version.outputs.result }}.elf
+        mv .pio/build/ratgdo_esp8266_hV25/firmware.md5 .pio/build/ratgdo_esp8266_hV25/homekit-ratgdo-${{ steps.version.outputs.result }}.md5
+
+    - name: Attach Bundle - Firmware.bin
+      uses: AButler/upload-release-assets@v3.0
+      with:
+        files: ".pio/build/ratgdo_esp8266_hV25/*.bin"
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        release-tag: ${{ steps.version.outputs.result }}
+    
+    - name: Upload Release Asset - Firmware.bin
+      uses: wow-actions/download-upload@v1
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        url: https://github.com/ratgdo/homekit-ratgdo/releases/download/${{ steps.version.outputs.result }}/homekit-ratgdo-${{ steps.version.outputs.result }}.bin
+        dir: docs/firmware/
+        commit_message: "Upload Latest Firmware: homekit-ratgdo-${{ steps.version.outputs.result }}.bin"
+  
+    - name: Upload Firmware.bin
+      uses: actions/upload-artifact@v4
+      with:
+        name: homekit-ratgdo-${{ steps.version.outputs.result }}.bin
+        path: |
+          .pio/build/ratgdo_esp8266_hV25/*.bin
+
+    - name: Download Firmware.bin
+      uses: actions/download-artifact@v4
+      with:
+        name: homekit-ratgdo-${{ steps.version.outputs.result }}.bin
+        path: |
+          docs/firmware/
+
+    - name: Attach Bundle - Firmware.md5
+      uses: AButler/upload-release-assets@v3.0
+      with:
+        files: ".pio/build/ratgdo_esp8266_hV25/*.md5"
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        release-tag: ${{ steps.version.outputs.result }}
+  
+    - name: Upload Release Asset - Firmware.md5
+      uses: wow-actions/download-upload@v1
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        url: https://github.com/ratgdo/homekit-ratgdo/releases/download/${{ steps.version.outputs.result }}/homekit-ratgdo-${{ steps.version.outputs.result }}.md5
+        dir: docs/firmware/
+        commit_message: "Upload Latest md5: homekit-ratgdo-${{ steps.version.outputs.result }}.md5"
+  
+    - name: Upload Firmware.bin
+      uses: actions/upload-artifact@v4
+      with:
+        name: homekit-ratgdo-${{ steps.version.outputs.result }}.md5
+        path: |
+          .pio/build/ratgdo_esp8266_hV25/*.md5
+
+    - name: Download Firmware.md5
+      uses: actions/download-artifact@v4
+      with:
+        name: homekit-ratgdo-${{ steps.version.outputs.result }}.md5
+        path: |
+          docs/firmware/
+
+    - name: Attach Bundle - Firmware.elf
+      uses: AButler/upload-release-assets@v3.0
+      with:
+        files: ".pio/build/ratgdo_esp8266_hV25/*.elf"
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        release-tag: ${{ steps.version.outputs.result }}
+
+    - name: Upload Release Asset - Firmware.elf
+      uses: wow-actions/download-upload@v1
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        url: https://github.com/ratgdo/homekit-ratgdo/releases/download/${{ steps.version.outputs.result }}/homekit-ratgdo-${{ steps.version.outputs.result }}.elf 
+        dir: docs/firmware/
+        commit_message: "Upload Latest Firmware: homekit-ratgdo-${{ steps.version.outputs.result }}.elf"
+  
+    - name: Upload Firmware.elf
+      uses: actions/upload-artifact@v4
+      with:
+        name: homekit-ratgdo-${{ steps.version.outputs.result }}.elf
+        path: |
+          .pio/build/ratgdo_esp8266_hV25/*.elf
+
+    - name: Download Firmware.elf
+      uses: actions/download-artifact@v4
+      with:
+        name: homekit-ratgdo-${{ steps.version.outputs.result }}.elf
+        path: |
+          docs/firmware/
+
+    - name: Sleep for 2 minutes before publishing to Discord
+      run: sleep 120s
+      shell: bash
+        
+    - name: Pre-Release
+      uses: SethCohen/github-releases-to-discord@v1.13.1
+      with:
+        webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        color: "5723991"
+        username: "ratgdo"
+        avatar_url: "https://avatars.githubusercontent.com/u/144837877?s=200&v=4"
+        footer_title: "Pre-Release: homekit-ratgdo"
+        footer_icon_url: "https://avatars.githubusercontent.com/u/144837877?s=200&v=4"
+        footer_timestamp: true  
+
+    - name: Create Pull Request
+      id: cpr
+      uses: peter-evans/create-pull-request@v7
+      with:
+        commit-message: "[NIGHTLY DEV RELEASE] ${{ steps.version.outputs.result }}"
+        committer: Ratgdo <github-automation@ratgdo.com>
+        author: Ratgdo <github-automation@fischer-ka.de>
+        signoff: false
+        branch: nightly-release
+        delete-branch: true
+        title: "[NIGHTLY DEV RELEASE] ${{ steps.version.outputs.result }}"
+        body: |
+          Update version by nightly dev release
+        labels: |
+          automated pr
+        assignees: Ratgdo
+        draft: false
