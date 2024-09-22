@@ -114,15 +114,6 @@ jobs:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         release-tag: v${{ steps.version.outputs.result }}
 
-    - name: Upload Release manifest.json
-      uses: wow-actions/download-upload@v1
-      with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        url: https://github.com/donavanbecker/homekit-ratgdo/releases/download/v${{ steps.version.outputs.result }}/manifest.json
-        dir: docs/
-        commit_message: "Upload Latest manifest.json for v${{ steps.version.outputs.result }}"
-
-
     - name: Cache PlatformIO
       uses: actions/cache@v3
       with:
@@ -161,14 +152,6 @@ jobs:
         files: ".pio/build/ratgdo_esp8266_hV25/*.bin"
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         release-tag: v${{ steps.version.outputs.result }}
-    
-    - name: Upload Release Asset - Firmware.bin
-      uses: wow-actions/download-upload@v1
-      with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        url: https://github.com/donavanbecker/homekit-ratgdo/releases/download/v${{ steps.version.outputs.result }}/homekit-ratgdo-v${{ steps.version.outputs.result }}.bin
-        dir: docs/firmware/
-        commit_message: "Upload Latest Firmware: homekit-ratgdo-v${{ steps.version.outputs.result }}.bin"
   
     - name: Upload Firmware.bin
       uses: actions/upload-artifact@v4
@@ -191,14 +174,6 @@ jobs:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         release-tag: v${{ steps.version.outputs.result }}
   
-    - name: Upload Release Asset - Firmware.md5
-      uses: wow-actions/download-upload@v1
-      with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        url: https://github.com/donavanbecker/homekit-ratgdo/releases/download/v${{ steps.version.outputs.result }}/homekit-ratgdo-v${{ steps.version.outputs.result }}.md5
-        dir: docs/firmware/
-        commit_message: "Upload Latest md5: homekit-ratgdo-v${{ steps.version.outputs.result }}.md5"
-  
     - name: Upload Firmware.bin
       uses: actions/upload-artifact@v4
       with:
@@ -219,14 +194,6 @@ jobs:
         files: ".pio/build/ratgdo_esp8266_hV25/*.elf"
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         release-tag: v${{ steps.version.outputs.result }}
-
-    - name: Upload Release Asset - Firmware.elf
-      uses: wow-actions/download-upload@v1
-      with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        url: https://github.com/donavanbecker/homekit-ratgdo/releases/download/v${{ steps.version.outputs.result }}/homekit-ratgdo-v${{ steps.version.outputs.result }}.elf 
-        dir: docs/firmware/
-        commit_message: "Upload Latest Firmware: homekit-ratgdo-v${{ steps.version.outputs.result }}.elf"
   
     - name: Upload Firmware.elf
       uses: actions/upload-artifact@v4
