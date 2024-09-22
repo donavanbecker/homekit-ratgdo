@@ -38,7 +38,7 @@ jobs:
           const fs = require("fs");
 
           const manifest = JSON.parse(fs.readFileSync(`${process.env.GITHUB_WORKSPACE}/docs/manifest.json`, "utf8"));
-          const prevVersion = manifest.prerelease];
+          const prevVersion = manifest.prerelease;
 
           // Increment the version
           const newVersion = semver.inc(prevVersion, "prerelease");
