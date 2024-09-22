@@ -164,7 +164,7 @@ jobs:
       with:
         files: ".pio/build/ratgdo_esp8266_hV25/*.bin"
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        release-tag: ${{ steps.version.outputs.result }}
+        release-tag: v${{ steps.version.outputs.result }}
     
     - name: Upload Release Asset - Firmware.bin
       uses: wow-actions/download-upload@v1
@@ -193,7 +193,7 @@ jobs:
       with:
         files: ".pio/build/ratgdo_esp8266_hV25/*.md5"
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        release-tag: ${{ steps.version.outputs.result }}
+        release-tag: v${{ steps.version.outputs.result }}
   
     - name: Upload Release Asset - Firmware.md5
       uses: wow-actions/download-upload@v1
@@ -222,7 +222,7 @@ jobs:
       with:
         files: ".pio/build/ratgdo_esp8266_hV25/*.elf"
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        release-tag: ${{ steps.version.outputs.result }}
+        release-tag: v${{ steps.version.outputs.result }}
 
     - name: Upload Release Asset - Firmware.elf
       uses: wow-actions/download-upload@v1
