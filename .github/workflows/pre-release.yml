@@ -36,19 +36,25 @@ jobs:
         script: |
           const semver = require("semver");
           const fs = require("fs");
-
+    
           const manifest = JSON.parse(fs.readFileSync(`${process.env.GITHUB_WORKSPACE}/docs/manifest.json`, "utf8"));
           const prevVersion = manifest.version;
-
+    
           const parsed = semver.parse(prevVersion);
-          let prereleaseIdentifier = parsed.prerelease[1] || 0;
-
-          // Increment the prerelease number
-          prereleaseIdentifier = parseInt(prereleaseIdentifier) + 1;
-
+          let prereleaseIdentifier = parsed.prerelease[0] || 0;
+    
+          // Increment the patch version and reset prerelease number if it's a new patch version
+          let newPatchVersion = parsed.patch;
+          if (parsed.prerelease.length === 0) {
+            newPatchVersion += 1;
+            prereleaseIdentifier = 0;
+          } else {
+            prereleaseIdentifier = parseInt(prereleaseIdentifier) + 1;
+          }
+    
           // Construct the new version
-          const newVersion = semver.inc(parsed, "-${prereleaseIdentifier}");
-
+          const newVersion = `${parsed.major}.${parsed.minor}.${newPatchVersion}-${prereleaseIdentifier}`;
+    
           return newVersion;
 
     - name: Update version on manifest.json
