@@ -4,7 +4,7 @@ import json
 Import("env")
 
 def get_firmware_specifier_build_flag():
-    f = open('./docs/manifest.json')
+    f = open('/home/runner/work/homekit-ratgdo/homekit-ratgdo/docs/manifest.json')
     data = json.load(f)
     f.close()
     build_version = data['version'].replace('v', '', 1) #remove letter v from front of version string
