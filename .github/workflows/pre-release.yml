@@ -38,7 +38,7 @@ jobs:
           const fs = require("fs");
 
           const manifest = JSON.parse(fs.readFileSync(`${process.env.GITHUB_WORKSPACE}/docs/manifest.json`, "utf8"));
-          const prevVersion = manifest.prerelease;
+          const prevVersion = manifest.version;
 
           const parsed = semver.parse(prevVersion);
           const prereleaseIdentifier = parsed.prerelease[0] || "alpha";
@@ -70,7 +70,7 @@ jobs:
         node -e "
         const fs = require('fs');
         const manifest = JSON.parse(fs.readFileSync('docs/manifest.json', 'utf8'));
-        manifest.prerelease = process.env.VERSION;
+        manifest.version = process.env.VERSION;
         fs.writeFileSync('docs/manifest.json', JSON.stringify(manifest, null, 2));
         "
         git add docs/manifest.json
