@@ -37,10 +37,10 @@ jobs:
           const semver = require("semver");
           const fs = require("fs");
           const path = require("path");
-    
+
           const primaryPath = path.join(process.env.GITHUB_WORKSPACE, 'docs', 'manifest.json');
           const fallbackPath = path.join('docs', 'manifest.json');
-    
+
           let manifest;
           try {
             manifest = JSON.parse(fs.readFileSync(primaryPath, "utf8"));
@@ -51,11 +51,11 @@ jobs:
               throw err;
             }
           }
-    
+
           const prevVersion = manifest.version;
           const parsed = semver.parse(prevVersion);
           let prereleaseIdentifier = parsed.prerelease[0] || 0;
-    
+
           // Increment the patch version and reset prerelease number if it's a new patch version
           let newPatchVersion = parsed.patch;
           if (parsed.prerelease.length === 0) {
@@ -64,10 +64,10 @@ jobs:
           } else {
             prereleaseIdentifier = parseInt(prereleaseIdentifier) + 1;
           }
-    
+
           // Construct the new version
-          const newVersion = `${parsed.major}.${parsed.minor}.${newPatchVersion}-${prereleaseIdentifier}`;
-    
+          const newVersion = `${parsed.major}.${parsed.minor}.${newPatchVersion}-prerelease.${prereleaseIdentifier}`;
+
           return newVersion;
 
     - name: Update version on manifest.json
