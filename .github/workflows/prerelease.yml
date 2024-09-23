@@ -70,7 +70,11 @@ jobs:
 
           // Update the manifest.json file with the new version
           manifest.version = newVersion;
-          fs.writeFileSync(primaryPath, JSON.stringify(manifest, null, 2));
+          if (fs.existsSync(primaryPath)) {
+            fs.writeFileSync(primaryPath, JSON.stringify(manifest, null, 2));
+          } else {
+            fs.writeFileSync(fallbackPath, JSON.stringify(manifest, null, 2));
+          }
 
           return newVersion;
 
