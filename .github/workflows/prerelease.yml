@@ -10,7 +10,7 @@ on:
 
 jobs:
   pre-release:
-    if: github.repository == 'donavanbecker/homekit-ratgdo' && github.event_name == 'push'
+    if: github.repository == 'donavanbecker/homekit-ratgdo' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
 
     steps:
