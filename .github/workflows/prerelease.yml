@@ -54,7 +54,7 @@ jobs:
 
           const prevVersion = manifest.version;
           const parsed = semver.parse(prevVersion);
-          let prereleaseIdentifier = parsed.prerelease[0] || 0;
+          let prereleaseIdentifier = parsed.prerelease[1] || 0;
 
           // Increment the patch version and reset prerelease number if it's a new patch version
           let newPatchVersion = parsed.patch;
@@ -67,6 +67,10 @@ jobs:
 
           // Construct the new version
           const newVersion = `${parsed.major}.${parsed.minor}.${newPatchVersion}-prerelease.${prereleaseIdentifier}`;
+
+          // Update the manifest.json file with the new version
+          manifest.version = newVersion;
+          fs.writeFileSync(primaryPath, JSON.stringify(manifest, null, 2));
 
           return newVersion;
 
