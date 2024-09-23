@@ -36,16 +36,29 @@ jobs:
         script: |
           const semver = require("semver");
           const fs = require("fs");
+          const path = require("path");
     
-          const manifest = JSON.parse(fs.readFileSync(`${process.env.GITHUB_WORKSPACE}/docs/manifest.json`, "utf8"));
+          const primaryPath = path.join(process.env.GITHUB_WORKSPACE, 'docs', 'manifest.json');
+          const fallbackPath = path.join('docs', 'manifest.json');
+    
+          let manifest;
+          try {
+            manifest = JSON.parse(fs.readFileSync(primaryPath, "utf8"));
+          } catch (err) {
+            if (err.code === 'ENOENT') {
+              manifest = JSON.parse(fs.readFileSync(fallbackPath, "utf8"));
+            } else {
+              throw err;
+            }
+          }
+    
           const prevVersion = manifest.version;
-    
           const parsed = semver.parse(prevVersion);
-          let prereleaseIdentifier = parsed.version[0] || 0;
+          let prereleaseIdentifier = parsed.prerelease[0] || 0;
     
           // Increment the patch version and reset prerelease number if it's a new patch version
           let newPatchVersion = parsed.patch;
-          if (parsed.patch.length === 0) {
+          if (parsed.prerelease.length === 0) {
             newPatchVersion += 1;
             prereleaseIdentifier = 0;
           } else {
