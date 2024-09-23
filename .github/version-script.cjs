@@ -34,26 +34,6 @@ if (refArgument == null) {
   process.exit(1);
 }
 
-/**
- * Queries the NPM registry for the latest version for the provided tag.
- * @param tag The tag to query for.
- * @returns {string} Returns the version.
- */
-function getTagVersionFromManifest(tag) {
-  let manifest;
-  try {
-    manifest = primaryPath;
-    console.log("Using manifest.json from primary path", tag);
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      manifest = fallbackPath;
-      console.log("Using manifest.json from fallback path", tag);
-    } else {
-      throw err;
-    }
-  }
-}
-
 function desiredTargetVersion(ref) {
   // ref is a GitHub action ref string
   if (ref.startsWith("refs/pull/")) {
@@ -83,17 +63,6 @@ function desiredTargetVersion(ref) {
 // derive the base version from the branch ref
 const baseVersion = desiredTargetVersion(refArgument);
 
-// query the npm registry for the latest version of the provided tag name
-const latestReleasedVersion = getTagVersionFromManifest(tagArgument); // e.g. 0.7.0-beta.12
-const latestReleaseBase = semver.inc(latestReleasedVersion, "patch"); // will produce 0.7.0 (removing the preid, needed for the equality check below)
-
-let publishTag;
-if (semver.eq(baseVersion, latestReleaseBase)) { // check if we are releasing another version for the latest beta
-  publishTag = latestReleasedVersion; // set the current latest beta to be incremented
-} else {
-  publishTag = baseVersion; // start of with a new beta version
-}
-
 // save the manifest.json
-manifestJSON.version = publishTag;
+manifestJSON.version = baseVersion;
 fs.writeFileSync("manifest.json", JSON.stringify(manifestJSON, null, 2));
